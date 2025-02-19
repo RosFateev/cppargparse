@@ -18,6 +18,13 @@ namespace argparse
         Parser(const std::string& description);
 
         void add_argument(std::initializer_list<Argument> argInitList);
+
+        ArgumentGroup* add_argument_group(const std::string& name,
+                                          const std::string& description);
+
+        ArgumentGroup* add_mutex_group(const std::string& name,
+                                       const std::string& description);
+
         void parse_args();
     
     // TODO:
@@ -42,15 +49,14 @@ namespace argparse
     private:
 
         // TODO: these might be better placed as "defaults" for argument groups later on
-        std::vector<std::unique_ptr<ArgumentGroup>>
-        std::set<Option> m_options;
-        std::set<Option> m_arguments;
+        std::vector<std::unique_ptr<ArgumentGroup>> m_argGroups;
+        std::vector<Argument> m_positionalArgs;
 
         // TODO:
         // container of argument groups
-    //    std::vector<std::set<Option>> m_argGroups;
+    //    std::vector<std::set<Argument>> m_argGroups;
         // container of mutually exclusive groups
-    //    std::vector<std::set<Option>> m_mutExclGroups;
+    //    std::vector<std::set<Argument>> m_mutExclGroups;
         // container of subparsers
     //    std::map<std::string, Parser> m_subparsers;
     };

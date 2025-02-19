@@ -5,20 +5,12 @@
 
 namespace argparse
 {
-    //--------------------------------------------------------------------------
-//    Argument::ArgumentFmt::ArgumentFmt(const std::string& nm,
-//                                 const std::string& lFlag,
-//                                 const std::string& sFlag) : name(nm),
-//                                                             longFlag(lFlag),
-//                                                             shortFlag(sFlag)
-//    {}
-
     void Argument::ArgumentFmt::DEBUG_PRINT()
     {
         std::cout << "\t{\n"
-                  << "\t\t name: " << name << ",\n"
-                  << "\t\t longFlag: "<< longFlag << ",\n"
-                  << "\t\t shortFlag: " << shortFlag << ",\n"
+                  << "\t\t name: " << nameFlag << ",\n"
+                  << "\t\t shortFlag: "<< shortFlag << ",\n"
+                  << "\t\t isOption: " << isOption << ",\n"
                   << "\t}\n";
     }
 
@@ -34,11 +26,6 @@ namespace argparse
                   << "\t\t description: " << description << ",\n"
                   << "\t}\n";
     }
-
-    //------------------------------------------------------------------------------
-    Argument::Argument(const Argument::ArgumentDef& opt) : m_argumentDef(opt),
-                                                   m_value(m_argumentDef.defaultVal)
-    {}
 
     void Argument::DEBUG_PRINT()
     {

@@ -8,7 +8,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
-    "src/option.cpp"
+    "src/argument.cpp"
     "src/converter.cpp"
     "src/parser.cpp"
     "src/types.cpp"
