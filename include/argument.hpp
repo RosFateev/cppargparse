@@ -108,19 +108,10 @@ namespace argparse
         }; // class ArgumentDef
 
         Argument(const ArgumentDef& opt) : m_argumentDef(opt)
-//                                           m_value(m_argumentDef.m_defaultVal)
         {}
 
-        inline const ArgumentDef&  get_argument() const
-        {
-            return m_argumentDef;
-        }
-        
-        inline ArgumentDef&  get_argument()
-        {
-            return m_argumentDef;
-        }
-//        inline const std::string&  get_value() const { return m_value; }
+        inline const ArgumentDef&  get_argument() const { return m_argumentDef; }
+        inline ArgumentDef&        get_argument()       { return m_argumentDef; }
 
         void consume(std::vector<std::string>::iterator& tokenIter);
 
@@ -129,8 +120,6 @@ namespace argparse
     private:
 
         ArgumentDef m_argumentDef;
-//        std::string m_value;
-
     }; // Argument
 
     class ArgumentGroup
@@ -140,9 +129,11 @@ namespace argparse
     
         void add_argument(std::initializer_list<Argument> argInitList);
 
-    private:
+    protected:
 
-        std::map<Argument::ArgumentFmt, Argument> args;
+        std::string                                 m_name;
+        std::map<Argument::ArgumentFmt, Argument>   m_args;
+        std::string                                 m_description;
     };
 
     class MutexArgumentGroup : public ArgumentGroup
@@ -151,6 +142,7 @@ namespace argparse
         MutexArgumentGroup();
     
     private:
+
         Argument* m_matchedArg;
     };
 

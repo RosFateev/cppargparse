@@ -62,13 +62,12 @@ namespace argparse
             {
                 return std::stoull(value);
             }
-            // TODO: support custom string-constructible types
             else if constexpr (type::traits::is_string_constructible<T>())
             {
                 return T(value);
             }
-            // TODO: this has to be handled on ArgumentAction level through different constructor
-            // suppose we have a more complex type
+            // TODO: this has to be handled on ArgumentAction level through different constructor -
+            // no complex nested types supported (like vect<vect<str>>)
 //            else if constexpr (std::is_same_v<T, std::vector<int>>)
 //            {
 //                std::vector<int> result;

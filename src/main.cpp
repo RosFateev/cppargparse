@@ -5,7 +5,15 @@
 #include "argument.hpp"
 #include "converter.hpp"
 
+class MyPath
+{
+public:
+    MyPath() {}
+    MyPath(const std::string& path) : m_path(path) {}
+    void operator=(const std::string& path) { m_path = path; }
 
+    std::string m_path;
+};
 
 int main()
 {
@@ -35,7 +43,17 @@ int main()
     intOpt.DEBUG_PRINT();
     std::cout << "extracted value: " << intVal << '\n';
 
-//    std::vector<std::string> filesPlaceholder;
+    MyPath pathVal;
+    argparse::Argument pathOpt(
+        {
+            { "file_path" },
+            pathVal
+        });
+    pathOpt.get_argument().m_action("/home/catdev/Documents/build");
+    pathOpt.DEBUG_PRINT();
+    std::cout << "extracted value: " << pathVal.m_path << '\n';
+
+    //    std::vector<std::string> filesPlaceholder;
 //    argparse::Argument vectIntOpt(
 //        {
 //            { "files" },
