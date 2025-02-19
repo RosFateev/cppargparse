@@ -9,29 +9,6 @@ namespace argparse
 {
     namespace type
     {
-        enum class Container_t
-        {
-            None,
-            Vector,
-            List,
-            Set
-        };
-
-        enum class Primitive_t
-        {
-            Bool,
-            Int,
-            Double,
-            // Currently not super needed
-            String,
-            CustomClass,
-        };
-
-        using type_hint = std::pair<Container_t, Primitive_t>;
-
-        std::string str(Container_t c);
-        std::string str(Primitive_t p);
-
         namespace traits
         {
             template <class...>
