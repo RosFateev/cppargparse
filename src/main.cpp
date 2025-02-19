@@ -21,7 +21,7 @@ int main()
             false,
             "The program will run in a recursive mode"
         });
-    boolOpt.get_argument().action("true");
+    boolOpt.get_argument().m_action("true");
     boolOpt.DEBUG_PRINT();
     std::cout << "extracted boolVal: " << boolVal << '\n';
 
@@ -31,9 +31,9 @@ int main()
             { "iteration_count" },
             intVal
         });
-    intOpt.get_argument().action("100");
+    intOpt.get_argument().m_action("100");
     intOpt.DEBUG_PRINT();
-    std::cout << "extracted value: " << boolVal << '\n';
+    std::cout << "extracted value: " << intVal << '\n';
 
 //    std::vector<std::string> filesPlaceholder;
 //    argparse::Argument vectIntOpt(

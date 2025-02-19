@@ -23,18 +23,32 @@ namespace argparse
         public:
 
             ArgumentFmt(const std::string& nameFlag,
-                        const std::string& sFlag = "");
+                        const std::string& shortFlag = "")
+                    : m_nameFlag(nameFlag),
+                      m_shortFlag(shortFlag),
+                      m_isOption(!nameFlag.empty() && nameFlag[0] == '-')
+            {}
 
-            bool operator<(const ArgumentFmt& fmt);
-            bool operator==(const ArgumentFmt& fmt);
+            inline bool operator<(const ArgumentFmt& fmt)
+            {
+                return m_nameFlag < fmt.m_nameFlag;
+            }
 
-            bool match(const std::string& token);
+            inline bool operator==(const ArgumentFmt& fmt)
+            {
+                return m_nameFlag == fmt.m_nameFlag;
+            }
+
+            inline bool match(const std::string& token)
+            {
+                return (token == m_nameFlag || token == m_shortFlag);
+            }
 
             void DEBUG_PRINT();
 
-            std::string nameFlag;
-            std::string shortFlag;
-            bool isOption;
+            std::string m_nameFlag;
+            std::string m_shortFlag;
+            bool m_isOption;
         }; // ArgumentFmt
 
         //----------------------------------------------------------------------
@@ -49,8 +63,12 @@ namespace argparse
 //            ArgumentAction(const std::string& name,
 //                         C<T>& placeholderCont);
 
-            void operator()(const std::string& value);
+            inline void operator()(const std::string& value)
+            {
+                m_action(value);
+            } // End: ArgumentAction::operator()
 
+            std::string                             m_name;
         private:
             std::function<void(const std::string&)> m_action;
         };
@@ -66,10 +84,10 @@ namespace argparse
                         T& placeholder,
                         const std::string& actionName = "store",
                         const std::string& nargs = "0",
-                        const std::string& defVal = "",
+                        const std::string& defaultVal = "",
                         const std::vector<std::string>& choices = { "" },
-                        bool required = false,
-                        const std::string& descr = "");
+                        bool isRequired = false,
+                        const std::string& description = "");
             
 //            template<template <typename> class C, typename T>
 //            ArgumentDef(const ArgumentFmt& format,
@@ -79,20 +97,29 @@ namespace argparse
             void DEBUG_PRINT();
 
 
-            ArgumentFmt                 format;
-            ArgumentAction              action;
-            std::string                 nargs;
-            std::string                 defaultVal;
-            std::vector<std::string>    choices;
-            bool                        isRequired;
-            std::string                 description;
+            ArgumentFmt                 m_format;
+            ArgumentAction              m_action;
+            std::string                 m_nargs;
+            std::string                 m_defaultVal;
+            std::vector<std::string>    m_choices;
+            bool                        m_isRequired;
+            std::string                 m_description;
 
         }; // class ArgumentDef
 
-        Argument(const ArgumentDef& opt);
+        Argument(const ArgumentDef& opt) : m_argumentDef(opt)
+//                                           m_value(m_argumentDef.m_defaultVal)
+        {}
 
-        inline const ArgumentDef&  get_argument() const { return m_argumentDef; }
-        inline ArgumentDef&  get_argument() { return m_argumentDef; }
+        inline const ArgumentDef&  get_argument() const
+        {
+            return m_argumentDef;
+        }
+        
+        inline ArgumentDef&  get_argument()
+        {
+            return m_argumentDef;
+        }
 //        inline const std::string&  get_value() const { return m_value; }
 
         void consume(std::vector<std::string>::iterator& tokenIter);
@@ -102,7 +129,7 @@ namespace argparse
     private:
 
         ArgumentDef m_argumentDef;
-        std::string m_value;
+//        std::string m_value;
 
     }; // Argument
 
@@ -114,7 +141,7 @@ namespace argparse
         void add_argument(std::initializer_list<Argument> argInitList);
 
     private:
-        // TODO: ArgumentFmt has no hash or comparison or order
+
         std::map<Argument::ArgumentFmt, Argument> args;
     };
 
@@ -136,56 +163,9 @@ namespace argparse
 namespace argparse
 {
     //--------------------------------------------------------------------------
-    Argument::ArgumentFmt::ArgumentFmt(const std::string& nF,
-                                       const std::string& sFlag)                 
-        : nameFlag(nF),
-          shortFlag(sFlag),
-          isOption(!nF.empty() && nF[0] == '-')
-    {}
-
-    bool Argument::ArgumentFmt::operator<(const ArgumentFmt& fmt)
-    {
-        return nameFlag < fmt.nameFlag;
-    }
-
-    bool Argument::ArgumentFmt::operator==(const ArgumentFmt& fmt)
-    {
-        return nameFlag == fmt.nameFlag;
-    }
-
-    bool Argument::ArgumentFmt::match(const std::string& token)
-    {
-        return (token == nameFlag || token == shortFlag);
-    }
-
-
-    //--------------------------------------------------------------------------
-//    template<>
-//    Argument::ArgumentAction::ArgumentAction<bool>(const std::string& name,
-//                                                   bool& placeholder)
-//    {
-//        if      (name == "store")
-//        {
-//            m_action = [&](const std::string& value)
-//            {
-//                placeholder = Converter::convert<bool>(value);
-//            };
-//        }
-//        else if (name.empty())
-//        {
-//            std::runtime_error("Error: ArgumentAction() - invalid action name!");
-//        }
-//        else
-//        {
-//            // fallthrough so that ArgumentAction children will be able to extend
-//            // the functionality.
-//            ;
-//        }
-//    }
-
     template<typename T>
     Argument::ArgumentAction::ArgumentAction(const std::string& name,
-                                             T& placeholder)
+                                             T& placeholder) : m_name("custom")
     {
         if      (name == "store")
         {
@@ -193,17 +173,23 @@ namespace argparse
             {
                 placeholder = Converter::convert<T>(value);
             };
+            m_name = name;
         }
-//        else if (name == "count")
-//        {
-//            m_action = [&](const std::string& value)
-//            {
-//                placeholder++;
-//            };
-//        }
+        else if (name == "count")
+        {
+            if constexpr (type::traits::is_incrementable<T>())
+            {
+                m_action = [&](const std::string& value)
+                {
+                    placeholder++;
+                };
+            }
+            m_name = name;
+        }
         else if (name.empty())
         {
             std::runtime_error("Error: ArgumentAction() - invalid action name!");
+            m_name = "error";
         }
         else
         {
@@ -213,38 +199,28 @@ namespace argparse
         }
     } // End: ArgumentAction::ArgumentAction()
 
-    void Argument::ArgumentAction::operator()(const std::string& value)
-    {
-        m_action(value);
-    } // End: ArgumentAction::operator()
-
 
     //--------------------------------------------------------------------------
     template<typename T>
-    Argument::ArgumentDef::ArgumentDef(const ArgumentFmt& inFormat,
+    Argument::ArgumentDef::ArgumentDef(const ArgumentFmt& format,
                                        T& placeholder,
                                        const std::string& actionName,
-                                       const std::string& inNargs,
-                                       const std::string& defVal,
+                                       const std::string& nargs,
+                                       const std::string& defaultVal,
                                        const std::vector<std::string>& choices,
-                                       bool required,
-                                       const std::string& descr)
-        : format(inFormat),
-          action(actionName, placeholder),
-          nargs((!inNargs.empty() ? inNargs
+                                       bool isRequired,
+                                       const std::string& description)
+        : m_format(format),
+          m_action(actionName, placeholder),
+          m_nargs((!nargs.empty() ? nargs
                                   : (actionName == "store" ? "?" : "0"))),
-          defaultVal(defVal),
-          choices(choices),
-          isRequired((format.isOption ? required : true)),
-          description(descr)
+          m_defaultVal(defaultVal),
+          m_choices(choices),
+          m_isRequired((format.m_isOption ? isRequired : true)),
+          m_description(description)
     {
         // TODO: some checks for values would be nice
     }
-
-    //--------------------------------------------------------------------------
-    Argument::Argument(const ArgumentDef& opt) : m_argumentDef(opt),
-                                                 m_value(m_argumentDef.defaultVal)
-    {}
 } // namespace argparse
 
 #endif // !defined(ARG_ARGUMENT_HPP)
